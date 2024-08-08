@@ -16,7 +16,7 @@ app.use((req, res, next) => {
 
 // Create a connection pool
 const pool = mysql.createPool({
-    connectionLimit: 10, // Maximum number of connections in the pool
+    connectionLimit: 10,
     host: 'sql7.freesqldatabase.com',
     user: 'sql7724126',
     password: 'V6PCDXyNdv',
@@ -26,7 +26,6 @@ const pool = mysql.createPool({
 app.post("/", (req, res) => {
     const userData = req.body.userData;
 
-    // Get a connection from the pool
     pool.getConnection((err, connection) => {
         if (err) {
             console.error('Error getting database connection: ' + err.stack);
@@ -41,14 +40,14 @@ app.post("/", (req, res) => {
                 console.log('Error checking email');
                 console.error('Error ' + error.stack);
                 res.status(500).json({ success: false, error: 'Error checking email' });
-                connection.release(); // Release the connection back to the pool
+                connection.release();
                 return;
             }
 
             if (emailResults.length > 0) {
                 console.log('Email already taken');
                 res.status(400).json({ success: false, error: 'Email already taken' });
-                connection.release(); // Release the connection back to the pool
+                connection.release();
             } else {
                 const checkUsernameQuery = 'SELECT * FROM users WHERE username = ?';
                 connection.query(checkUsernameQuery, [userData.username], (error, usernameResults) => {
@@ -56,14 +55,14 @@ app.post("/", (req, res) => {
                         console.log('Error checking username');
                         console.error('Error ' + error.stack);
                         res.status(500).json({ success: false, error: 'Error checking username' });
-                        connection.release(); // Release the connection back to the pool
+                        connection.release();
                         return;
                     }
 
                     if (usernameResults.length > 0) {
                         console.log('Username already taken');
                         res.status(400).json({ success: false, error: 'Username already taken' });
-                        connection.release(); // Release the connection back to the pool
+                        connection.release();
                     } else {
                         const insertQuery = 'INSERT INTO users(name, email, gender, username, passw) VALUES(?, ?, ?, ?, ?)';
                         connection.query(insertQuery, [userData.name, userData.email, userData.gender, userData.username, userData.password], (error) => {
@@ -75,7 +74,7 @@ app.post("/", (req, res) => {
                                 console.log('User data has been saved!');
                                 res.status(200).json({ success: true });
                             }
-                            connection.release(); // Release the connection back to the pool
+                            connection.release();
                         });
                     }
                 });
